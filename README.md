@@ -1,3 +1,4 @@
+
 # Cost_Optimization_Challenge
 ## Managing Billing Records in Azure Serverless Architecture
 
@@ -9,9 +10,7 @@
 
 ![Architecture Diagram](./architecture.png)
 
-
-
-
+```
 ┌────────────┐       ┌────────────┐        ┌─────────────┐
 │   Client   │──────▶│   API/App  │───────▶│ Unified Data│
 └────────────┘       └────────────┘        │   Access    │
@@ -24,11 +23,7 @@
    │                         │ Blob Storage │
    │    (Else Get from OLD)  │ (>3 months)  │
    └─────────────────────────┴──────────────┘
-
-'''
-
-
-
+```
 
 ---
 
@@ -119,21 +114,26 @@ def process_batch(batch, archive_container, container):
 
 if __name__ == "__main__":
     archive_old_billing_records()
+```
+</details>
 
 ---
 
 ### 3. Unified Access Layer
 
-Wrap Cosmos DB and Blob Storage access in a logic layer within your API or Azure Function:
+Wrap Cosmos DB and Blob Storage access in your logic/API layer:
 
-- **On read:**  
-  1. Attempt to fetch from Cosmos DB.  
-  2. If not found, fetch from Blob Storage.  
-  3. Return the record to the client.
+- **On read:**
+  1. Try Cosmos DB
+  2. If not found, try Blob Storage
+  3. Return to client
 
-- **On write:**  
-  1. Always write to Cosmos DB (no logic change).
+- **On write:**
+  - Always write to Cosmos DB
 
+#### Pseudocode for Reading Billing Records
+
+```python
 def get_billing_record(record_id, partition_key):
     try:
         return cosmosdb_client.read_item(record_id, partition_key)
@@ -141,37 +141,35 @@ def get_billing_record(record_id, partition_key):
         folder = determine_folder_based_on_id_logic(record_id)
         blob = blob_client.download_blob(f"{folder}/{record_id}.json")
         return json.loads(blob.readall())
-
-
-text
+```
 
 ---
 
 ### 4. Operations
 
-- **Deployment:** Use Azure CLI / Bicep / ARM templates to automate deployment of Functions, storage containers, and schedules.  
-- **Code management:** Store functions and API logic in version control with clear documentation.  
-- **Monitoring:** Enable Application Insights and Blob Storage logging for real-time monitoring and alerting.  
-- **Recovery:** Use soft-delete with grace periods when moving records; regularly test restoring data from Blob Storage back to Cosmos DB.
+- **Deployment:** Use Azure CLI / Bicep / ARM templates
+- **Code management:** Version-controlled with docs
+- **Monitoring:** Application Insights + Blob Storage logs
+- **Recovery:** Use soft-delete and restore testing
 
 ---
 
 ### 5. Handling Edge Cases & Reliability
 
-- If Blob Storage reads are slow, consider using Azure Blob Storage Hot access tier or caching “hot” cold records in-memory.  
-- Use Blob Storage soft-delete and versioning to protect against accidental deletions.  
-- If users update old archived records, retrieve from Blob, restore into Cosmos DB, then allow the update operation.  
-- Run periodic audits (e.g., weekly) to reconcile data consistency between Cosmos DB and Blob Storage.
+- Slow blob reads? Use Hot access tier or cache
+- Use Blob soft-delete & versioning for protection
+- For updates on archived records, restore to Cosmos DB
+- Periodic audits to ensure data consistency
 
 ---
 
 ## Summary Table
 
-| Goal                     | Solution Step                          |
-|-------------------------|--------------------------------------|
+| Goal                      | Solution Step                          |
+|---------------------------|----------------------------------------|
 | Simplicity & maintainability | Azure Functions + foldered Blob Storage |
-| No downtime / data loss    | Verify-then-delete, retries, logs      |
-| No API changes           | Unified access logic layer             |
+| No downtime / data loss     | Verify-then-delete, retries, logs       |
+| No API changes            | Unified access logic layer              |
 
 ---
 
@@ -180,4 +178,3 @@ text
 - [Azure Cosmos DB Well-Architected Guidance](https://learn.microsoft.com/en-us/azure/well-architected/service-guides/cosmos-db)
 
 ---
-
