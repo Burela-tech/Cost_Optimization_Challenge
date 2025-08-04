@@ -2,6 +2,9 @@ step-by-step implementation plan to cost-optimize billing records in a serverles
 
 1. Architecture Overview
 
+![Architecture Diagram](./architecture.png)
+
+
       +---------+                +---------------------+
       |  Client |<--request----->|  API/Function Layer |
       +---------+                +----------+----------+
