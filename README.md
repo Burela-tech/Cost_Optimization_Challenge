@@ -7,6 +7,8 @@
 
 ### 1. Architecture Overview
 
+![Architecture Diagram](./architecture.png)
+
 '''
 
 
